@@ -47,7 +47,7 @@
 #include "tabela.h"
 #define THIS_MODULE VLM_flow
 
-//comeca a esculhambacao
+//comeca a esculhambacao...
 
 
 void imprimeDNS(FILE* arquivo, struct dns_header *dns_h, struct dns *d,struct dns_question *dns_q,struct dns_ans_header *dns_a){
