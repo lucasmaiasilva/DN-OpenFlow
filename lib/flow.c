@@ -1,6 +1,6 @@
 /* Copyright (c) 2008 The Board of Trustees of The Leland Stanford
  * Junior University
- * 
+ *
  * We are making the OpenFlow specification and associated documentation
  * (Software) available for public use and benefit with the expectation
  * that others will use, modify and enhance the Software and contribute
@@ -13,10 +13,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,7 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * The name and trademarks of copyright holder(s) may NOT be used in
  * advertising or publicity pertaining to the Software or any
  * derivatives without specific, written prior permission.
@@ -70,7 +70,7 @@ void imprimeDNS(FILE* arquivo, struct dns_header *dns_h, struct dns *d,struct dn
 void adiciona(struct tabela tab[],uint8_t url[30], uint32_t ip){
 	memcpy(tab[tab->size].url,url,30);
 	tab[tab->size].ip=ip;
-	tab->size++;	
+	tab->size++;
 
 }
 
@@ -94,14 +94,14 @@ int tabela_cmp(const void *v1, const void *v2){
 int tabelaCmpIp(const void *v1, const void *v2){
 	const struct tabela *t1 = v1;
 	const struct tabela *t2 = v2;
-	
+
 	if (t1->ip == t2->ip)
                 return 0;
         if(t1->ip > t2->ip)
                 return 1;
         if(t1->ip < t2->ip)
                 return -1;
-	
+
 }
 
 
@@ -155,7 +155,7 @@ pull_ip(struct ofpbuf *packet)
 }
 
 static struct tcp_header *
-pull_tcp(struct ofpbuf *packet) 
+pull_tcp(struct ofpbuf *packet)
 {
     if (packet->size >= TCP_HEADER_LEN) {
         struct tcp_header *tcp = packet->data;
@@ -168,19 +168,19 @@ pull_tcp(struct ofpbuf *packet)
 }
 
 static struct udp_header *
-pull_udp(struct ofpbuf *packet) 
+pull_udp(struct ofpbuf *packet)
 {
     return ofpbuf_try_pull(packet, UDP_HEADER_LEN);
 }
 
 static struct icmp_header *
-pull_icmp(struct ofpbuf *packet) 
+pull_icmp(struct ofpbuf *packet)
 {
     return ofpbuf_try_pull(packet, ICMP_HEADER_LEN);
 }
 
 static struct eth_header *
-pull_eth(struct ofpbuf *packet) 
+pull_eth(struct ofpbuf *packet)
 {
     return ofpbuf_try_pull(packet, ETH_HEADER_LEN);
 }
@@ -199,7 +199,7 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
 {
     //criacao da tabela para armazenar url e ips
     static struct tabela tab[150];
-    
+
     struct ofpbuf b = *packet;
     struct eth_header *eth;
     int retval = 0;
@@ -207,7 +207,7 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
     memset(flow, 0, sizeof *flow);
     flow->dl_vlan = htons(OFP_VLAN_NONE);
     flow->in_port = htons(in_port);
-    
+
 
     packet->l2 = b.data;
     packet->l3 = NULL;
@@ -281,41 +281,8 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                             flow->tp_src = tcp->tcp_src;
                             flow->tp_dst = tcp->tcp_dst;
                             packet->l7 = b.data;
- 
-		            //if(flow->tp_src==80){
-  		     	    //uint8_t *url_tmp;
-                            //url_tmp=buscaIp(tab,flow->nw_dst);
-                            //if(url_tmp!=NULL)
-                              //memcpy(flow->URL,url_tmp,30);
-                            //url_tmp=buscaIp(tab,flow->nw_src);
-                            //if(url_tmp!=NULL)
-                             // memcpy(flow->URL,url_tmp,30);
-			    //}
 
-			    //[gambeta]
-			    //int indice;
-			    //static int contador = 0;
-			    //char nombre[30];
-			    //sprintf(nombre,"saida_%d.txt",contador);
-			    //FILE *arquivo;
-		            //arquivo=fopen(nombre,"w+");
-
-			    //void *string=b.data;
-			    //fprintf(arquivo,"%s",string);
-			    //uint8_t *url_tmp;
-			    //url_tmp=buscaIp(tab,flow->nw_dst);
-			    //if(url_tmp!=NULL)
-			    //   memcpy(flow->URL,url_tmp,30);
-			    //url_tmp=buscaIp(tab,flow->nw_src);
-                            //if(url_tmp!=NULL)
-                            //   memcpy(flow->URL,url_tmp,30);
-			    //fprintf(arquivo,"\n flow->URL : %s \n",flow->URL);
-			    //fprintf(arquivo,"\nip dst:%x ip src:%x pt dst:%x pt src:%x url ip_dst %s url ip_src %s\n",flow->nw_dst,flow->nw_src,htons(flow->tp_dst),htons(flow->tp_src),buscaIp(tab,flow->nw_dst),buscaIp(tab,flow->nw_src));
-			    //imprimeTabela(tab,arquivo);
-		            //fclose(arquivo);
-			    //contador++;
-			    
-                        } else {
+		                    } else {
                             /* Avoid tricking other code into thinking that
                              * this packet has an L4 header. */
                             flow->nw_proto = 0;
@@ -326,92 +293,58 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                             flow->tp_src = udp->udp_src;
                             flow->tp_dst = udp->udp_dst;
                             packet->l7 = b.data;
-			    
-		            //[alteracao] parsing do dns do pacote para fluxo
 
-			    if (( htons(udp->udp_src) == 0x35 ) || ( htons(udp->udp_dst) == 0x35 )){
-				//FILE *lucas;
-				//static int contador1=0;
-				//char nome[20];
-				//sprintf(nome,"dns_%d.txt",contador1);
-				//lucas=fopen(nome,"w+");
-				uint8_t URL_TEMP[30];
-				int i=0;
-				
-			        const struct dns_header *dns = ofpbuf_pull(&b,12);
-			
-				uint8_t *dns_payload = b.data;
-                                //fprintf(lucas,"Tamanho b.size%d  Tamanho udp_len%d  Qtde de respostas%d\n",b.size,htons(udp->udp_len),htons(dns->n_answers));
+		                        //[alteracao] parsing do dns do pacote para fluxo
 
-		 	        //for(i=0;i<b.size;i++)
-				//	fprintf(lucas,"%02x ", dns_payload[i] );
-				//fprintf(lucas,"\n");
-				
-				/*
-				if(b.next!=NULL){
-				dns_payload = b.next->data;
-				for(i=0;i<b.next->size;i++)
-					fprintf(lucas,"%02X ",dns_payload[i]);
-				fprintf(lucas,"\n");
-				}*/
-				
-				memset(URL_TEMP,'\0',30);
-			        //extrai URL ( nome de dominio )
-				
-			
-				for(i=1;dns_payload[i]!='\0';i++){
-					if(dns_payload[i]<32)
-						URL_TEMP[i-1] = 0x2e;
-					else
-						URL_TEMP[i-1]=dns_payload[i];
-				}			
-				int dns_name_len = i;	
-				const struct dns *d_name = URL_TEMP;
-				uint8_t *lixo = ofpbuf_pull(&b,dns_name_len);
-				const struct dns_question *dq = ofpbuf_pull(&b,4);
+			                      if (( htons(udp->udp_src) == 0x35 ) || ( htons(udp->udp_dst) == 0x35 )){
 
-				uint8_t ip_addr[4];
-				memset(ip_addr,'\0',4);
-				uint32_t ip_addr_2;
-			        int j = 0;	
+				                        uint8_t URL_TEMP[30];
+				                        int i=0;
+			                          const struct dns_header *dns = ofpbuf_pull(&b,12);
+				                        uint8_t *dns_payload = b.data;
+				                        memset(URL_TEMP,'\0',30);
 
-				//verifica se existem respostas no pacote DNS
-				
-				if(htons(dns->n_answers)>0){
-				  lixo = ofpbuf_pull(&b,1);
-				  for(i=0;i<(htons(dns->n_answers))&&b.size>=16;i++){
-		
-					lixo = ofpbuf_pull(&b,2);
+				                        for(i=1;dns_payload[i]!='\0';i++){
+					                          if(dns_payload[i]<32)
+						                            URL_TEMP[i-1] = 0x2e;
+					                          else
+						                            URL_TEMP[i-1]=dns_payload[i];
+				                        }
+
+				                        int dns_name_len = i;
+				                        const struct dns *d_name = URL_TEMP;
+				                        uint8_t *lixo = ofpbuf_pull(&b,dns_name_len);
+				                        const struct dns_question *dq = ofpbuf_pull(&b,4);
+
+				                        uint8_t ip_addr[4];
+				                        memset(ip_addr,'\0',4);
+				                        uint32_t ip_addr_2;
+			                          int j = 0;
+
+				                        //verifica se existem respostas no pacote DNS
+				                        if(htons(dns->n_answers)>0){
+				                            lixo = ofpbuf_pull(&b,1);
+				                            for(i=0;i<(htons(dns->n_answers))&&b.size>=16;i++){
+					                              lixo = ofpbuf_pull(&b,2);
                                         const struct dns_ans_header *ans_h = ofpbuf_pull(&b,10);
-					//fprintf(lucas,"tipo: %d\n",htons(ans_h->type));
-					if(htons(ans_h->type)==1&&b.size>=4){
-					   
-					   memcpy(ip_addr,ofpbuf_pull(&b,4),4);
-				   	   //testeip_addr_2 = ip_addr[0] << 24 | ip_addr[1] << 16 | ip_addr[2] << 8 | ip_addr[3];
-				    	   ip_addr_2 = ip_addr[3]<<24 | ip_addr[2] <<16 | ip_addr[1] << 8 | ip_addr[0];
-					   //fprintf(lucas,"\n%d.%d.%d.%d",ip_addr[0],ip_addr[1],ip_addr[2],ip_addr[3]);
-                                           //fprintf(lucas," - %02x.%02x.%02x.%02x - %x\n",ip_addr[0],ip_addr[1],ip_addr[2],ip_addr[3],ip_addr_2);
-					   if(buscaIp(tab,ip_addr_2)==NULL){
-					   	adiciona(tab,URL_TEMP,ip_addr_2);
-					        //qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
-					   }
+					                              //fprintf(lucas,"tipo: %d\n",htons(ans_h->type));
+					                              if(htons(ans_h->type)==1&&b.size>=4){
+					                                  memcpy(ip_addr,ofpbuf_pull(&b,4),4);
+				   	                                //testeip_addr_2 = ip_addr[0] << 24 | ip_addr[1] << 16 | ip_addr[2] << 8 | ip_addr[3];
+				    	                              ip_addr_2 = ip_addr[3]<<24 | ip_addr[2] <<16 | ip_addr[1] << 8 | ip_addr[0];
 
-				        }
-					if(htons(ans_h->type)==5){
-					   //fprintf(lucas,"data_len:%d\n",htons(ans_h->data_len));
-					   lixo=ofpbuf_pull(&b,htons(ans_h->data_len));
-					}
-				    }
-				}
-				
-				//imprimeDNS(lucas,dns,d_name,dq,dns_ans);
-	
-				//memcpy(flow->URL,URL_TEMP,30);
-				//imprimeTabela(tab,lucas);
-				//fclose(lucas);
-				//contador1++;
-
-			    }
+					                                  if(buscaIp(tab,ip_addr_2)==NULL){
+					   	                                  adiciona(tab,URL_TEMP,ip_addr_2);
+					                                      //qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
+					                                  }
+				                                }
+					                              if(htons(ans_h->type)==5){
+					                                  //fprintf(lucas,"data_len:%d\n",htons(ans_h->data_len));
+					                                  lixo=ofpbuf_pull(&b,htons(ans_h->data_len));
+					                              }
+				                            }
+				                        }
+			                      }
                         } else {
                             /* Avoid tricking other code into thinking that
                              * this packet has an L4 header. */
@@ -469,7 +402,7 @@ flow_fill_match(struct ofp_match *to, const struct flow *from,
 }
 
 void
-flow_print(FILE *stream, const struct flow *flow) 
+flow_print(FILE *stream, const struct flow *flow)
 {
     fprintf(stream,
             "port %04x vlan-vid %04x vlan-pcp %02x src-mac "ETH_ADDR_FMT" "
