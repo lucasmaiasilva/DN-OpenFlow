@@ -198,7 +198,8 @@ int
 flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
 {
     //criacao da tabela para armazenar url e ips
-    static struct tabela tab[150];
+    static struct tabela tab[15000];
+    static int contador = 0;
 
     struct ofpbuf b = *packet;
     struct eth_header *eth;
@@ -265,8 +266,8 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                 packet->l4 = b.data;
                 if (!IP_IS_FRAGMENT(nh->ip_frag_off)) {
 
-		     //[alteracao] atribuicao de nomes de dominio a pacotes que possuem IP address
-		     uint8_t *url_tmp;
+		                 //[alteracao] atribuicao de nomes de dominio a pacotes que possuem IP address
+		                 uint8_t *url_tmp;
                      //url_tmp=buscaIp(tab,flow->nw_dst);
                      //if(url_tmp!=NULL)
                      //  memcpy(flow->URL,url_tmp,30);
@@ -294,57 +295,46 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                             flow->tp_dst = udp->udp_dst;
                             packet->l7 = b.data;
 
-		                        //[alteracao] parsing do dns do pacote para fluxo
+		                        //[alteracao] Parser DNS
 
 			                      if (( htons(udp->udp_src) == 0x35 ) || ( htons(udp->udp_dst) == 0x35 )){
+                                FILE * lucas ;
+                                char nome_arquivo[15];
+                                char nome_dominio[100];
+                                memset(nome_dominio,'\0',100);
+                                sprintf(nome_arquivo,"teste_%d.txt",contador++);
+                                lucas=fopen(nome_arquivo,"w+");
+                                const struct dns_header *dns = ofpbuf_pull(&b,12);
+                                fprintf(lucas,"[ID]%x\n[Flags]%x\n[Queries]%x\n[Answers]%x\n[Aut_Rec]%x\n[A_Rec_Pkt]%x\n",dns->id,dns->flags,dns->n_queries,dns->n_answers,dns->n_aut_rec,dns->a_rec_pkt);
+                                int i = 0 ;
+                                uint8_t * payload = b.data;
+                                uint8_t * pull_bytes;
+                                uint8_t * aux;
+                                uint8_t period = 0x2e;
+                                while(payload[i]!=0x0){
+                                    pull_bytes=ofpbuf_pull(&b,1);
+                                    aux=ofpbuf_pull(&b,*pull_bytes);
+                                    memcpy(nome_dominio+strlen(nome_dominio),aux,*pull_bytes);
+                                    i=i+1+*pull_bytes;
+                                    if(payload[i]!=0x0){
+                                      memcpy(nome_dominio+strlen(nome_dominio),&period,sizeof(period));
+                                    }
+                                }
+                                fprintf(lucas, "[Nome de Dominio]:%s\n",nome_dominio);
+                                const struct dns_question *dns_q = ofpbuf_pull(&b,4);
+                                payload = b.data;
+                                if(htons(dns->n_answers>0x0)){
+                                    //if(payload[0]==0xc0){
+                                        i = 0;
+                                        while (i<b.size) {
+                                            fprintf(lucas, "%x ",payload[i] );
+                                        }
 
-				                        uint8_t URL_TEMP[30];
-				                        int i=0;
-			                          const struct dns_header *dns = ofpbuf_pull(&b,12);
-				                        uint8_t *dns_payload = b.data;
-				                        memset(URL_TEMP,'\0',30);
-
-				                        for(i=1;dns_payload[i]!='\0';i++){
-					                          if(dns_payload[i]<32)
-						                            URL_TEMP[i-1] = 0x2e;
-					                          else
-						                            URL_TEMP[i-1]=dns_payload[i];
-				                        }
-
-				                        int dns_name_len = i;
-				                        const struct dns *d_name = URL_TEMP;
-				                        uint8_t *lixo = ofpbuf_pull(&b,dns_name_len);
-				                        const struct dns_question *dq = ofpbuf_pull(&b,4);
-
-				                        uint8_t ip_addr[4];
-				                        memset(ip_addr,'\0',4);
-				                        uint32_t ip_addr_2;
-			                          int j = 0;
-
-				                        //verifica se existem respostas no pacote DNS
-				                        if(htons(dns->n_answers)>0){
-				                            lixo = ofpbuf_pull(&b,1);
-				                            for(i=0;i<(htons(dns->n_answers))&&b.size>=16;i++){
-					                              lixo = ofpbuf_pull(&b,2);
-                                        const struct dns_ans_header *ans_h = ofpbuf_pull(&b,10);
-					                              //fprintf(lucas,"tipo: %d\n",htons(ans_h->type));
-					                              if(htons(ans_h->type)==1&&b.size>=4){
-					                                  memcpy(ip_addr,ofpbuf_pull(&b,4),4);
-				   	                                //testeip_addr_2 = ip_addr[0] << 24 | ip_addr[1] << 16 | ip_addr[2] << 8 | ip_addr[3];
-				    	                              ip_addr_2 = ip_addr[3]<<24 | ip_addr[2] <<16 | ip_addr[1] << 8 | ip_addr[0];
-
-					                                  if(buscaIp(tab,ip_addr_2)==NULL){
-					   	                                  adiciona(tab,URL_TEMP,ip_addr_2);
-					                                      //qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
-					                                  }
-				                                }
-					                              if(htons(ans_h->type)==5){
-					                                  //fprintf(lucas,"data_len:%d\n",htons(ans_h->data_len));
-					                                  lixo=ofpbuf_pull(&b,htons(ans_h->data_len));
-					                              }
-				                            }
-				                        }
-			                      }
+                                        fprintf(lucas, "\nContem respostas: %d\n",htons(dns->n_answers) );
+                                    //}
+                                }
+                                fclose(lucas);
+                            }
                         } else {
                             /* Avoid tricking other code into thinking that
                              * this packet has an L4 header. */
