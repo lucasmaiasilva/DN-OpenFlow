@@ -1,6 +1,6 @@
 /* Copyright (c) 2008 The Board of Trustees of The Leland Stanford
  * Junior University
- * 
+ *
  * We are making the OpenFlow specification and associated documentation
  * (Software) available for public use and benefit with the expectation
  * that others will use, modify and enhance the Software and contribute
@@ -13,10 +13,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,7 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * The name and trademarks of copyright holder(s) may NOT be used in
  * advertising or publicity pertaining to the Software or any
  * derivatives without specific, written prior permission.
@@ -52,16 +52,16 @@ static inline bool eth_addr_is_multicast(const uint8_t ea[6])
 {
     return ea[0] & 1;
 }
-static inline bool eth_addr_is_local(const uint8_t ea[6]) 
+static inline bool eth_addr_is_local(const uint8_t ea[6])
 {
     return ea[0] & 2;
 }
-static inline bool eth_addr_is_zero(const uint8_t ea[6]) 
+static inline bool eth_addr_is_zero(const uint8_t ea[6])
 {
     return !(ea[0] | ea[1] | ea[2] | ea[3] | ea[4] | ea[5]);
 }
 static inline bool eth_addr_equals(const uint8_t a[ETH_ADDR_LEN],
-                                   const uint8_t b[ETH_ADDR_LEN]) 
+                                   const uint8_t b[ETH_ADDR_LEN])
 {
     return !memcmp(a, b, ETH_ADDR_LEN);
 }
@@ -289,7 +289,7 @@ struct dns_header{
    uint16_t n_answers;//number of answers
    uint16_t n_aut_rec;//numner of authorative records in a packet
    uint16_t a_rec_pkt;//number of addtional records in a packet
-   //uint8_t URL[URL_SIZE];//query name 
+   //uint8_t URL[URL_SIZE];//query name
 };
 BUILD_ASSERT_DECL(DNS_HEADER_LEN == sizeof(struct dns_header));
 
@@ -309,9 +309,10 @@ struct dns_question{
 struct dns_ans_header{
   //uint16_t name;
   uint16_t type;
-  uint16_t classe;
+  uint16_t class;
   uint32_t ttl;
   uint16_t data_len;
+  uint16_t padding;
 };BUILD_ASSERT_DECL(DNS_ANS_HEADER_LEN == sizeof(struct dns_ans_header));
 
 #define DNS_ANS_LEN 4

@@ -35,6 +35,7 @@
 #include "flow.h"
 #include <inttypes.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include "hash.h"
 #include "ofpbuf.h"
@@ -62,7 +63,7 @@ void imprimeDNS(FILE* arquivo, struct dns_header *dns_h, struct dns *d,struct dn
   fprintf(arquivo,"  classe               :%d\n",htons(dns_q->classe));
   //fprintf(arquivo,"  nome                 :%d\n",htons(dns_a->name));
   fprintf(arquivo,"  tipo                 :%d\n",htons(dns_a->type));
-  fprintf(arquivo,"  classe               :%d\n",dns_a->classe);
+  fprintf(arquivo,"  classe               :%d\n",dns_a->class);
   fprintf(arquivo,"  ttl                  :%d\n",dns_a->ttl);
   fprintf(arquivo,"  data length          :%d\n",dns_a->data_len);
 }
@@ -297,41 +298,125 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
 
 		                        //[alteracao] Parser DNS
 
-			                      if (( htons(udp->udp_src) == 0x35 ) || ( htons(udp->udp_dst) == 0x35 )){
+			                      if (( ntohs(udp->udp_src) == 0x35 ) /*|| ( htons(udp->udp_dst) == 0x35 )*/){
                                 FILE * lucas ;
+                                uint8_t * payload_2 = b.data;
                                 char nome_arquivo[15];
                                 char nome_dominio[100];
+                                char nome_dominio_teste[100];
                                 memset(nome_dominio,'\0',100);
+                                memset(nome_dominio_teste,'\0',100);
                                 sprintf(nome_arquivo,"teste_%d.txt",contador++);
                                 lucas=fopen(nome_arquivo,"w+");
-                                const struct dns_header *dns = ofpbuf_pull(&b,12);
-                                fprintf(lucas,"[ID]%x\n[Flags]%x\n[Queries]%x\n[Answers]%x\n[Aut_Rec]%x\n[A_Rec_Pkt]%x\n",dns->id,dns->flags,dns->n_queries,dns->n_answers,dns->n_aut_rec,dns->a_rec_pkt);
-                                int i = 0 ;
+                                const struct dns_header *dns = ofpbuf_try_pull(&b,12);
+                                //fprintf(lucas,"[ID]%x\n[Flags]%x\n[Queries]%x\n[Answers]%x\n[Aut_Rec]%x\n[A_Rec_Pkt]%x\n",dns->id,dns->flags,dns->n_queries,dns->n_answers,dns->n_aut_rec,dns->a_rec_pkt);
+                                int i = 0,j=0;
                                 uint8_t * payload = b.data;
+                                int payload_size = 0;
                                 uint8_t * pull_bytes;
                                 uint8_t * aux;
                                 uint8_t period = 0x2e;
+                                int label;
                                 while(payload[i]!=0x0){
-                                    pull_bytes=ofpbuf_pull(&b,1);
-                                    aux=ofpbuf_pull(&b,*pull_bytes);
+                                    pull_bytes=ofpbuf_try_pull(&b,1);
+                                    aux=ofpbuf_try_pull(&b,*pull_bytes);
                                     memcpy(nome_dominio+strlen(nome_dominio),aux,*pull_bytes);
                                     i=i+1+*pull_bytes;
                                     if(payload[i]!=0x0){
                                       memcpy(nome_dominio+strlen(nome_dominio),&period,sizeof(period));
                                     }
                                 }
-                                fprintf(lucas, "[Nome de Dominio]:%s\n",nome_dominio);
-                                const struct dns_question *dns_q = ofpbuf_pull(&b,4);
+                                aux=ofpbuf_try_pull(&b,1);
+                                const struct dns_question *dns_q = ofpbuf_try_pull(&b,4);
                                 payload = b.data;
-                                if(htons(dns->n_answers>0x0)){
-                                    //if(payload[0]==0xc0){
-                                        i = 0;
-                                        while (i<b.size) {
-                                            fprintf(lucas, "%x ",payload[i] );
-                                        }
+                                payload_size=b.size;
+                                //fprintf(lucas, "%d\n",b.size );
 
-                                        fprintf(lucas, "\nContem respostas: %d\n",htons(dns->n_answers) );
-                                    //}
+                                while (ntohs(dns->n_answers)>0&&j<b.size) {
+                                    if(payload[j]>=0xc0){
+                                        j++;
+                                        label = payload[j];
+                                        i=1;
+                                        while (payload_2[i+label]!=0x0) {
+                                            if(payload_2[i+label]<32){
+                                                nome_dominio_teste[i-1]=period;
+                                            }
+                                            else{
+                                                nome_dominio_teste[i-1]=payload_2[i+label];
+                                            }
+                                            i++;
+                                        }
+                                        struct dns_ans_header dns_a;
+                                        j++;
+                                        uint32_t ipv4;
+
+                                        memcpy(&dns_a.type, payload+j,sizeof(uint16_t));
+                                        j+=2;
+                                        memcpy(&dns_a.class, payload+j,sizeof(uint16_t));
+                                        j+=2;
+                                        memcpy(&dns_a.ttl, payload+j,sizeof(uint32_t));
+                                        j+=4;
+                                        memcpy(&dns_a.data_len, payload+j,sizeof(uint16_t));
+                                        j+=2;
+                                        //fprintf(lucas,"[type]%x [class]%x [ttl]%x [data_len]%x\n",ntohs(dns_a.type),ntohs(dns_a.class),ntohl(dns_a.ttl),ntohs(dns_a.data_len));
+
+                                        if(ntohs(dns_a.type)==1){
+                                            memcpy(&ipv4, payload+j,sizeof(uint32_t));
+                                            j+=4;
+                                            struct sockaddr_in ipv4_a;
+                                            ipv4_a.sin_addr.s_addr=ipv4;
+                                            //fprintf(lucas, "%s - %x - %s\n",nome_dominio,ntohl(ipv4),inet_ntoa(ipv4_a.sin_addr) );
+                                            if(buscaIp(tab,ipv4)==NULL){
+                                                adiciona(tab,nome_dominio,ipv4);
+                                                qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
+                                                imprimeTabela(tab,lucas);
+                                            }
+                                        }
+                                        else{
+                                            j+=ntohs(dns_a.data_len);
+                                        }
+                                    }
+                                    else{
+                                        if(payload[j]==0x0){
+                                            j=b.size;
+                                        }
+                                        else{
+                                            memset(nome_dominio_teste,'\0',100);
+                                            while(payload[j]!=0x0){
+                                                label=payload[j];
+                                                memcpy(nome_dominio_teste+strlen(nome_dominio_teste),payload+j,label);
+                                                j+=label;
+                                                if(payload[j]<32){
+                                                    memcpy(nome_dominio_teste+strlen(nome_dominio_teste),&period,sizeof(period));
+                                                    j++;
+                                                }
+                                            }
+                                            struct dns_ans_header dns_a;
+                                            uint32_t ipv4;
+                                            memcpy(&dns_a.type, payload+j,sizeof(uint16_t));
+                                            j+=2;
+                                            memcpy(&dns_a.class, payload+j,sizeof(uint16_t));
+                                            j+=2;
+                                            memcpy(&dns_a.ttl, payload+j,sizeof(uint32_t));
+                                            j+=4;
+                                            memcpy(&dns_a.data_len, payload+j,sizeof(uint16_t));
+                                            j+=2;
+                                            //fprintf(lucas,"[type]%x [class]%x [ttl]%x [data_len]%x\n",ntohs(dns_a.type),ntohs(dns_a.class),ntohl(dns_a.ttl),ntohs(dns_a.data_len));
+
+                                            if(ntohs(dns_a.type==1)){
+                                                memcpy(&ipv4, payload+j,sizeof(uint32_t));
+                                                j+=4;
+                                                struct sockaddr_in ipv4_a;
+                                                ipv4_a.sin_addr.s_addr=ipv4;
+                                                //fprintf(lucas, "Sem Compressao %s - %x - %s\n",nome_dominio,ntohl(ipv4),inet_ntoa(ipv4_a.sin_addr) );
+                                                //adicionar na tabela
+
+                                            }
+                                            else{
+                                                j+=ntohs(dns_a.data_len);
+                                            }
+                                        }
+                                    }
                                 }
                                 fclose(lucas);
                             }
