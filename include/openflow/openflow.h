@@ -35,7 +35,7 @@
 
 #ifndef OPENFLOW_OPENFLOW_H
 #define OPENFLOW_OPENFLOW_H 1
-#define URL_SIZE 30
+#define DN_SIZE 30
 
 #ifdef __KERNEL__
 #include <linux/types.h>
@@ -535,9 +535,10 @@ struct ofp_match {
     uint32_t nw_dst;           /* IP destination address. */
     uint16_t tp_src;           /* TCP/UDP source port. */
     uint16_t tp_dst;           /* TCP/UDP destination port. */
-    uint8_t URL[URL_SIZE];     /*Campo adicionado para incluir o URL*/
+    uint8_t dn_src[DN_SIZE];   /*Campo adicionado para incluir o domain name*/
+    uint8_t dn_dst[DN_SIZE];   /*alteracao*/
 };
-OFP_ASSERT(sizeof(struct ofp_match) == 72);
+OFP_ASSERT(sizeof(struct ofp_match) == 100);
 
 /* The match fields for ICMP type and code use the transport source and
  * destination port fields, respectively. */
@@ -580,7 +581,7 @@ struct ofp_flow_mod {
                                             from the length field in the
                                             header. */
 };
-OFP_ASSERT(sizeof(struct ofp_flow_mod) == 104);
+OFP_ASSERT(sizeof(struct ofp_flow_mod) == 136);
 
 /* Why was this flow removed? */
 enum ofp_flow_removed_reason {
@@ -607,7 +608,7 @@ struct ofp_flow_removed {
     uint64_t packet_count;
     uint64_t byte_count;
 };
-OFP_ASSERT(sizeof(struct ofp_flow_removed) == 120);
+OFP_ASSERT(sizeof(struct ofp_flow_removed) == 152);
 
 /* Values for 'type' in ofp_error_message.  These values are immutable: they
  * will not change in future versions of the protocol (although new values may
@@ -778,7 +779,7 @@ struct ofp_flow_stats_request {
                                  as an output port.  A value of OFPP_NONE
                                  indicates no restriction. */
 };
-OFP_ASSERT(sizeof(struct ofp_flow_stats_request) == 76);
+OFP_ASSERT(sizeof(struct ofp_flow_stats_request) == 104);
 
 /* Body of reply to OFPST_FLOW request. */
 struct ofp_flow_stats {
@@ -799,7 +800,7 @@ struct ofp_flow_stats {
     uint64_t byte_count;      /* Number of bytes in flow. */
     struct ofp_action_header actions[0]; /* Actions. */
 };
-OFP_ASSERT(sizeof(struct ofp_flow_stats) == 120);
+OFP_ASSERT(sizeof(struct ofp_flow_stats) == 152);
 
 /* Body for ofp_stats_request of type OFPST_AGGREGATE. */
 struct ofp_aggregate_stats_request {
@@ -811,7 +812,7 @@ struct ofp_aggregate_stats_request {
                                  as an output port.  A value of OFPP_NONE
                                  indicates no restriction. */
 };
-OFP_ASSERT(sizeof(struct ofp_aggregate_stats_request) == 76);
+OFP_ASSERT(sizeof(struct ofp_aggregate_stats_request) == 104);
 
 /* Body of reply to OFPST_AGGREGATE request. */
 struct ofp_aggregate_stats_reply {

@@ -73,7 +73,7 @@ struct nx_snat_config {
 
     /* Range of IP addresses to impersonate.  Set both values to the
      * same to support a single address.  */
-    uint32_t ip_addr_start; 
+    uint32_t ip_addr_start;
     uint32_t ip_addr_end;
 
     /* Range of transport ports that should be used as new source port.  A
@@ -83,10 +83,10 @@ struct nx_snat_config {
     uint16_t udp_start;
     uint16_t udp_end;
 
-    /* MAC address to use for ARP requests for a SNAT IP address that 
-     * comes in on a different interface than 'port'.  A value of all 
-     * zeros silently drops those ARP requests.  Requests that arrive 
-     * on 'port' get a response with the mac address of the datapath 
+    /* MAC address to use for ARP requests for a SNAT IP address that
+     * comes in on a different interface than 'port'.  A value of all
+     * zeros silently drops those ARP requests.  Requests that arrive
+     * on 'port' get a response with the mac address of the datapath
      * device. */
     uint8_t mac_addr[OFP_ETH_ALEN];
     uint8_t pad2[2];
@@ -100,8 +100,8 @@ struct nx_act_config {
     uint8_t pad[2];
     union {
         struct nx_snat_config snat[0];
-    };                      /* Array of action configurations.  The number 
-                               is inferred from the length field in the 
+    };                      /* Array of action configurations.  The number
+                               is inferred from the length field in the
                                header. */
 };
 OFP_ASSERT(sizeof(struct nx_act_config) == 20);
@@ -117,7 +117,7 @@ struct nx_action_snat {
     uint16_t len;                   /* Length is 8. */
     uint32_t vendor;                /* NX_VENDOR_ID. */
     uint16_t subtype;               /* NXAST_SNAT. */
-    uint16_t port;                  /* Output port--it must be previously 
+    uint16_t port;                  /* Output port--it must be previously
                                        configured. */
     uint8_t pad[4];
 };
@@ -190,6 +190,6 @@ struct nx_flow_end {
     uint64_t packet_count;
     uint64_t byte_count;
 };
-OFP_ASSERT(sizeof(struct nx_flow_end) == 144);
+OFP_ASSERT(sizeof(struct nx_flow_end) == 176);
 
 #endif /* openflow/nicira-ext.h */

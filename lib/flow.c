@@ -268,13 +268,15 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                 if (!IP_IS_FRAGMENT(nh->ip_frag_off)) {
 
 		                 //[alteracao] atribuicao de nomes de dominio a pacotes que possuem IP address
-		                 uint8_t *url_tmp;
-                     //url_tmp=buscaIp(tab,flow->nw_dst);
-                     //if(url_tmp!=NULL)
-                     //  memcpy(flow->URL,url_tmp,30);
-                     url_tmp=buscaIp(tab,flow->nw_src);
-                     if(url_tmp!=NULL)
-                       memcpy(flow->URL,url_tmp,30);
+		                 uint8_t *dn_tmp;
+                     dn_tmp=buscaIp(tab,flow->nw_dst);
+                     if(dn_tmp!=NULL){
+                          memcpy(flow->dn_dst,dn_tmp,30);
+                     }
+                     dn_tmp=buscaIp(tab,flow->nw_src);
+                     if(dn_tmp!=NULL){
+                          memcpy(flow->dn_src,dn_tmp,30);
+                     }
 
 
                     if (flow->nw_proto == IP_TYPE_TCP) {
@@ -369,7 +371,7 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                                             if(buscaIp(tab,ipv4)==NULL){
                                                 adiciona(tab,nome_dominio,ipv4);
                                                 qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
-                                                imprimeTabela(tab,lucas);
+                                                //imprimeTabela(tab,lucas);
                                             }
                                         }
                                         else{
@@ -409,7 +411,11 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                                                 struct sockaddr_in ipv4_a;
                                                 ipv4_a.sin_addr.s_addr=ipv4;
                                                 //fprintf(lucas, "Sem Compressao %s - %x - %s\n",nome_dominio,ntohl(ipv4),inet_ntoa(ipv4_a.sin_addr) );
-                                                //adicionar na tabela
+                                                if(buscaIp(tab,ipv4)==NULL){
+                                                    adiciona(tab,nome_dominio,ipv4);
+                                                    qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
+                                                    //imprimeTabela(tab,lucas);
+                                                }
 
                                             }
                                             else{
@@ -418,6 +424,7 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                                         }
                                     }
                                 }
+                                imprimeTabela(tab,lucas);
                                 fclose(lucas);
                             }
                         } else {
@@ -465,7 +472,8 @@ flow_fill_match(struct ofp_match *to, const struct flow *from,
     memcpy(to->dl_src, from->dl_src, ETH_ADDR_LEN);
     memcpy(to->dl_dst, from->dl_dst, ETH_ADDR_LEN);
     //[alteracao]
-    memcpy(to->URL,from->URL,30);
+    memcpy(to->dn_src,from->dn_src,30);
+    memcpy(to->dn_dst,from->dn_dst,30);
     to->dl_type = from->dl_type;
     to->nw_tos = from->nw_tos;
     to->nw_proto = from->nw_proto;

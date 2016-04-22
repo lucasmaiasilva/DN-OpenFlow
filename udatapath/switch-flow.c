@@ -1,6 +1,6 @@
 /* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford
  * Junior University
- * 
+ *
  * We are making the OpenFlow specification and associated documentation
  * (Software) available for public use and benefit with the expectation
  * that others will use, modify and enhance the Software and contribute
@@ -13,10 +13,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,7 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * The name and trademarks of copyright holder(s) may NOT be used in
  * advertising or publicity pertaining to the Software or any
  * derivatives without specific, written prior permission.
@@ -99,7 +99,8 @@ flow_fields_match(const struct flow *a, const struct flow *b, uint32_t w,
             && !((a->nw_dst ^ b->nw_dst) & dst_mask)
             && (w & OFPFW_TP_SRC || a->tp_src == b->tp_src)
             && (w & OFPFW_TP_DST || a->tp_dst == b->tp_dst)
-	    && !strcmp(a->URL,b->URL));
+	    && !strcmp(a->dn_src,b->dn_src)
+      && !strcmp(a->dn_dst,b->dn_dst));
 }
 
 static uint32_t make_nw_mask(int n_wild_bits)
@@ -127,13 +128,13 @@ flow_matches_2wild(const struct sw_flow_key *a, const struct sw_flow_key *b)
                              a->nw_dst_mask & b->nw_dst_mask);
 }
 
-/* Returns nonzero if 't' (the table entry's key) and 'd' (the key 
- * describing the match) match, that is, if their fields are 
+/* Returns nonzero if 't' (the table entry's key) and 'd' (the key
+ * describing the match) match, that is, if their fields are
  * equal modulo wildcards, zero otherwise.  If 'strict' is nonzero, the
  * wildcards must match in both 't_key' and 'd_key'.  Note that the
  * table's wildcards are ignored unless 'strict' is set. */
 int
-flow_matches_desc(const struct sw_flow_key *t, const struct sw_flow_key *d, 
+flow_matches_desc(const struct sw_flow_key *t, const struct sw_flow_key *d,
         int strict)
 {
     if (strict && d->wildcards != t->wildcards) {
@@ -168,7 +169,8 @@ flow_extract_match(struct sw_flow_key* to, const struct ofp_match* from)
     memcpy(to->flow.dl_dst, from->dl_dst, ETH_ADDR_LEN);
     to->flow.dl_type = from->dl_type;
     //[alteracao]
-    memcpy(to->flow.URL,from->URL,30);
+    memcpy(to->flow.dn_src,from->dn_src,30);
+    memcpy(to->flow.dn_dst,from->dn_dst,30);
     to->flow.nw_tos = to->flow.nw_proto = to->flow.nw_src = to->flow.nw_dst = 0;
     to->flow.tp_src = to->flow.tp_dst = 0;
     memset(to->flow.pad, 0, sizeof(to->flow.pad));
@@ -189,7 +191,7 @@ flow_extract_match(struct sw_flow_key* to, const struct ofp_match* from)
             /* Can't sensibly match on transport headers if the network
              * protocol is unknown. */
             to->wildcards |= OFPFW_TP;
-        } else if (from->nw_proto == IPPROTO_TCP 
+        } else if (from->nw_proto == IPPROTO_TCP
                 || from->nw_proto == IPPROTO_UDP
                 || from->nw_proto == IPPROTO_ICMP) {
             to->flow.tp_src = from->tp_src;
@@ -221,7 +223,7 @@ flow_extract_match(struct sw_flow_key* to, const struct ofp_match* from)
 	to->nw_dst_mask = make_nw_mask(to->wildcards >> OFPFW_NW_DST_SHIFT);
 }
 
-/* Allocates and returns a new flow with room for 'actions_len' actions. 
+/* Allocates and returns a new flow with room for 'actions_len' actions.
  * Returns the new flow or a null pointer on failure. */
 struct sw_flow *
 flow_alloc(size_t actions_len)
@@ -267,7 +269,7 @@ void
 flow_free(struct sw_flow *flow)
 {
     if (!flow) {
-        return; 
+        return;
     }
     free(flow->sf_acts);
     free(flow);
@@ -275,7 +277,7 @@ flow_free(struct sw_flow *flow)
 
 /* Copies 'actions' into a newly allocated structure for use by 'flow'
  * and frees the structure that defined the previous actions. */
-void flow_replace_acts(struct sw_flow *flow, 
+void flow_replace_acts(struct sw_flow *flow,
         const struct ofp_action_header *actions, size_t actions_len)
 {
     struct sw_flow_actions *sfa;

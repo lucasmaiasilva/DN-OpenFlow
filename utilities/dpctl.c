@@ -1,6 +1,6 @@
 /* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford
  * Junior University
- * 
+ *
  * We are making the OpenFlow specification and associated documentation
  * (Software) available for public use and benefit with the expectation
  * that others will use, modify and enhance the Software and contribute
@@ -13,10 +13,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,7 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * The name and trademarks of copyright holder(s) may NOT be used in
  * advertising or publicity pertaining to the Software or any
  * derivatives without specific, written prior permission.
@@ -379,13 +379,13 @@ static int ifup_and_add_port(struct dpif *dpif, int dp_idx, const char *netdev)
     return retval ? retval : dpif_add_port(dpif, dp_idx, netdev);
 }
 
-static void do_add_port(const struct settings *s UNUSED, int argc UNUSED, 
+static void do_add_port(const struct settings *s UNUSED, int argc UNUSED,
         char *argv[])
 {
     add_del_ports(argc, argv, ifup_and_add_port, "add", "to");
 }
 
-static void do_del_port(const struct settings *s UNUSED, int argc UNUSED, 
+static void do_del_port(const struct settings *s UNUSED, int argc UNUSED,
         char *argv[])
 {
     add_del_ports(argc, argv, dpif_del_port, "remove", "from");
@@ -445,7 +445,7 @@ dump_stats_transaction(const char *vconn_name, struct ofpbuf *request)
     uint32_t send_xid = ((struct ofp_header *) request->data)->xid;
     struct vconn *vconn;
     bool done = false;
-    
+
     open_vconn(vconn_name, &vconn);
     send_openflow_buffer(vconn, request);
     while (!done) {
@@ -457,7 +457,7 @@ dump_stats_transaction(const char *vconn_name, struct ofpbuf *request)
         recv_xid = ((struct ofp_header *) reply->data)->xid;
         if (send_xid == recv_xid) {
             struct ofp_stats_reply *osr;
-          
+
             ofp_print(stdout, reply->data, reply->size, 1);
 
             osr = ofpbuf_at(reply, 0, sizeof *osr);
@@ -747,7 +747,7 @@ str_to_u32(const char *str)
 }
 
 static void
-str_to_mac(const char *str, uint8_t mac[6]) 
+str_to_mac(const char *str, uint8_t mac[6])
 {
     if (sscanf(str, "%"SCNx8":%"SCNx8":%"SCNx8":%"SCNx8":%"SCNx8":%"SCNx8,
                &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) != 6) {
@@ -846,7 +846,7 @@ str_to_action(char *str, struct ofpbuf *b)
     char *saveptr = NULL;
 
     for (act = strtok_r(str, ", \t\r\n", &saveptr); act;
-         act = strtok_r(NULL, ", \t\r\n", &saveptr)) 
+         act = strtok_r(NULL, ", \t\r\n", &saveptr))
     {
         /* Arguments are separated by colons */
         arg = strchr(act, ':');
@@ -1062,10 +1062,12 @@ str_to_flow(char *string, struct ofp_match *match, struct ofpbuf *actions,
                 *hard_timeout = atoi(value);
             } else if (cookie && !strcmp(name, "cookie")) {
                 *cookie = atoi(value);
-	    //[alteracao]
-            } else if (!strcmp(name,"url")){
-		memcpy(match->URL,value,30);	
-		}else if (parse_field(name, &f)) {
+	          //[alteracao]
+            } else if (!strcmp(name,"dn_src")){
+		            memcpy(match->dn_src,value,30);
+            } else if (!strcmp(name,"dn_dst")){
+		            memcpy(match->dn_dst,value,30);
+		        }else if (parse_field(name, &f)) {
                 void *data = (char *) match + f->offset;
                 if (!strcmp(value, "*") || !strcmp(value, "ANY")) {
                     wildcards |= f->wildcard;
@@ -1178,15 +1180,15 @@ do_add_flow(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
     ofm->flags = htons(OFPFF_SEND_FLOW_REM);
     if (table_id == EMERG_TABLE_ID)
         ofm->flags |= htons(OFPFF_EMERG);
-    
+
     open_vconn(argv[1], &vconn);
     send_openflow_buffer(vconn, buffer);
     vconn_close(vconn);
     //[alteracao]
-    FILE *lucas;
-    lucas = fopen("do_add_flow.txt","w+");
-    fprintf(lucas,"%s",ofm->match.URL);
-    fclose(lucas);
+    //FILE *lucas;
+    //lucas = fopen("do_add_flow.txt","w+");
+    //fprintf(lucas,"%s",ofm->match.dn_src);
+    //fclose(lucas);
 }
 
 static void
@@ -1392,7 +1394,7 @@ do_mod_port(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
     int n_ports;
     int port_idx;
     int port_no;
-    
+
 
     /* Check if the argument is a port index.  Otherwise, treat it as
      * the port name. */
@@ -1401,7 +1403,7 @@ do_mod_port(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
         port_no = -1;
     }
 
-    /* Send a "Features Request" to get the information we need in order 
+    /* Send a "Features Request" to get the information we need in order
      * to modify the port. */
     make_openflow(sizeof(struct ofp_header), OFPT_FEATURES_REQUEST, &request);
     open_vconn(argv[1], &vconn);
@@ -1418,7 +1420,7 @@ do_mod_port(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
             }
         } else {
             /* Check argument as an interface name */
-            if (!strncmp((char *)osf->ports[port_idx].name, argv[2], 
+            if (!strncmp((char *)osf->ports[port_idx].name, argv[2],
                         sizeof osf->ports[0].name)) {
                 break;
             }
@@ -1440,14 +1442,14 @@ do_mod_port(const struct settings *s UNUSED, int argc UNUSED, char *argv[])
 
     if (!strncasecmp(argv[3], MOD_PORT_CMD_UP, sizeof MOD_PORT_CMD_UP)) {
         opm->mask |= htonl(OFPPC_PORT_DOWN);
-    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_DOWN, 
+    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_DOWN,
                 sizeof MOD_PORT_CMD_DOWN)) {
         opm->mask |= htonl(OFPPC_PORT_DOWN);
         opm->config |= htonl(OFPPC_PORT_DOWN);
-    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_FLOOD, 
+    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_FLOOD,
                 sizeof MOD_PORT_CMD_FLOOD)) {
         opm->mask |= htonl(OFPPC_NO_FLOOD);
-    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_NOFLOOD, 
+    } else if (!strncasecmp(argv[3], MOD_PORT_CMD_NOFLOOD,
                 sizeof MOD_PORT_CMD_NOFLOOD)) {
         opm->mask |= htonl(OFPPC_NO_FLOOD);
         opm->config |= htonl(OFPPC_NO_FLOOD);

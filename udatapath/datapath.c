@@ -617,17 +617,17 @@ dp_run(struct datapath *dp)
             //struct ofp_flow_mod *ofm;
 	    //ofm=make_openflow(sizeof *ofm,OFPT_FLOW_MOD,&buffer);
 	    //ofm->command=htons(OFPFC_ADD);
-            //ofm->actions->type=htons(OFPAT_OUTPUT); 
+            //ofm->actions->type=htons(OFPAT_OUTPUT);
 	    //struct ofp_match match;
             //match.nw_src=htons("10.0.0.1");
 	    //ofm->match=match;
-	    
+
             //struct ofp_header *oh;
             //oh=(struct ofp_header *)buffer->data;
             //struct sender sender;
             //sender.remote = r;
             //sender.xid = oh->xid;
-            //add_flow(dp,&sender,ofm);          
+            //add_flow(dp,&sender,ofm);
             remote_create(dp, rconn_new_from_vconn("passive", new_vconn));
         } else if (retval != EAGAIN) {
             VLOG_WARN_RL(&rl, "accept failed (%s)", strerror(retval));
@@ -995,14 +995,14 @@ dp_output_control(struct datapath *dp, struct ofpbuf *buffer, int in_port,
     opi->reason         = reason;
     opi->pad            = 0;
     send_openflow_buffer(dp, buffer, NULL);
-    
+
 
     //FILE *pacote ;
     //char nome[50];
     //sprintf(nome,"pacote%d.txt",htonl(opi->buffer_id));
     //pacote=fopen(nome,"w+");
     //int indice = 0 ;
-    //[alteracao] 
+    //[alteracao]
     //fprintf(pacote,"buffer id do header %d\n",opi->header.xid);
     //fprintf(pacote,"buffer id %x\n",htonl(opi->buffer_id));
     //fprintf(pacote,"total len %x\n",htons(opi->total_len));
@@ -1010,11 +1010,11 @@ dp_output_control(struct datapath *dp, struct ofpbuf *buffer, int in_port,
     //for(indice=55;indice<htons(opi->total_len);indice++)
       //fprintf(pacote,"%x ",opi->data[indice]);
       //fprintf(pacote,"%x ",opi->data[indice+0x8a]); 55 devido a posicao de onde comeca o name do dns no frame do evento packet in
-    
+
     //fprintf(pacote,"\n[DEBUG] datapath.c 991");
     //fclose(pacote);
-    
-   
+
+
 }
 
 static void
@@ -1184,6 +1184,8 @@ dp_send_error_msg(struct datapath *dp, const struct sender *sender,
     send_openflow_buffer(dp, buffer, sender);
 }
 
+
+//alteracao
 static void
 fill_flow_stats(struct ofpbuf *buffer, struct sw_flow *flow,
                 int table_idx, uint64_t now)
@@ -1201,7 +1203,8 @@ fill_flow_stats(struct ofpbuf *buffer, struct sw_flow *flow,
     memcpy(ofs->match.dl_src, flow->key.flow.dl_src, ETH_ADDR_LEN);
     memcpy(ofs->match.dl_dst, flow->key.flow.dl_dst, ETH_ADDR_LEN);
     //[alteracao]
-    memcpy(ofs->match.URL,flow->key.flow.URL,30);
+    memcpy(ofs->match.dn_src,flow->key.flow.dn_src,30);
+    memcpy(ofs->match.dn_dst,flow->key.flow.dn_dst,30);
     ofs->match.dl_vlan   = flow->key.flow.dl_vlan;
     ofs->match.dl_type   = flow->key.flow.dl_type;
     ofs->match.nw_tos    = flow->key.flow.nw_tos;
@@ -2427,6 +2430,3 @@ static void discard_buffer(uint32_t id)
         p->buffer = NULL;
     }
 }
-
-
-
