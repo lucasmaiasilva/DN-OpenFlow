@@ -299,17 +299,16 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                             packet->l7 = b.data;
 
 		                        //[alteracao] Parser DNS
-
-			                      if (( ntohs(udp->udp_src) == 0x35 ) /*|| ( htons(udp->udp_dst) == 0x35 )*/){
-                                FILE * lucas ;
+			                      if (( ntohs(udp->udp_src) == 0x35 ) ){
+                                //FILE * lucas ;
                                 uint8_t * payload_2 = b.data;
                                 char nome_arquivo[15];
                                 char nome_dominio[100];
                                 char nome_dominio_teste[100];
                                 memset(nome_dominio,'\0',100);
                                 memset(nome_dominio_teste,'\0',100);
-                                sprintf(nome_arquivo,"teste_%d.txt",contador++);
-                                lucas=fopen(nome_arquivo,"w+");
+                                //sprintf(nome_arquivo,"teste_%d.txt",contador++);
+                                //lucas=fopen(nome_arquivo,"w+");
                                 const struct dns_header *dns = ofpbuf_try_pull(&b,12);
                                 //fprintf(lucas,"[ID]%x\n[Flags]%x\n[Queries]%x\n[Answers]%x\n[Aut_Rec]%x\n[A_Rec_Pkt]%x\n",dns->id,dns->flags,dns->n_queries,dns->n_answers,dns->n_aut_rec,dns->a_rec_pkt);
                                 int i = 0,j=0;
@@ -424,8 +423,8 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
                                         }
                                     }
                                 }
-                                imprimeTabela(tab,lucas);
-                                fclose(lucas);
+                                //imprimeTabela(tab,lucas);
+                                //fclose(lucas);
                             }
                         } else {
                             /* Avoid tricking other code into thinking that
