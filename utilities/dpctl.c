@@ -1122,7 +1122,6 @@ do_dump_flows(const struct settings *s UNUSED, int argc, char *argv[])
     uint16_t out_port;
     struct ofpbuf *request;
 
-    printf("%s %s \n",argv[2],argv[3]);
     req = alloc_stats_request(sizeof *req, OFPST_FLOW, &request);
     str_to_flow(argc > 2 ? argv[2] : "", &req->match, NULL,
                 &req->table_id, &out_port, NULL, NULL, NULL, NULL);

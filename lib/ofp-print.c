@@ -68,7 +68,6 @@ static void ofp_print_match(struct ds *, const struct ofp_match *,
 char *
 ofp_packet_to_string(const void *data, size_t len, size_t total_len UNUSED)
 {
-    printf("%s\n","funcao ofp_packet_to_strinh");
     struct ds ds = DS_EMPTY_INITIALIZER;
     struct ofpbuf buf;
 
@@ -124,7 +123,6 @@ ofp_packet_in(struct ds *string, const void *oh, size_t len, int verbosity)
 {
     const struct ofp_packet_in *op = oh;
     size_t data_len;
-    printf("%s\n","funcao ofp_packet_in");
     ds_put_format(string, " total_len=%"PRIu16" in_port=",
                   ntohs(op->total_len));
     ofp_print_port_name(string, ntohs(op->in_port));
@@ -187,7 +185,6 @@ ofp_packet_in(struct ds *string, const void *oh, size_t len, int verbosity)
 
 static void ofp_print_port_name(struct ds *string, uint16_t port)
 {
-    printf("%s\n","funcao ofp_print_port_name");
     const char *name;
     switch (port) {
     case OFPP_IN_PORT:
@@ -225,7 +222,6 @@ static int
 ofp_print_action(struct ds *string, const struct ofp_action_header *ah,
         size_t actions_len)
 {
-    printf("%s\n","funcap ofp_print_action");
     uint16_t type;
     size_t len;
 
@@ -433,7 +429,6 @@ ofp_print_actions(struct ds *string, const struct ofp_action_header *action,
     uint8_t *p = (uint8_t *)action;
     int len = 0;
 
-    printf("%s\n","funcao ofp_print_actions");
     ds_put_cstr(string, "actions=");
     while (actions_len > 0) {
         if (len) {
@@ -454,7 +449,6 @@ ofp_print_actions(struct ds *string, const struct ofp_action_header *action,
 static void ofp_packet_out(struct ds *string, const void *oh, size_t len,
                            int verbosity)
 {
-    printf("%s\n","funcao ofp_packet_out");
     const struct ofp_packet_out *opo = oh;
     size_t actions_len = ntohs(opo->actions_len);
 
@@ -684,7 +678,6 @@ ofp_match_to_string(const struct ofp_match *om, int verbosity)
     bool skip_type = false;
     bool skip_proto = false;
 
-    printf("%s","ofp_match_to_string\n");
 
     if (!(w & OFPFW_DL_TYPE)) {
         skip_type = true;
@@ -1546,8 +1539,6 @@ ofp_to_string(const void *oh_, size_t len, int verbosity)
     struct ds string = DS_EMPTY_INITIALIZER;
     const struct ofp_header *oh = oh_;
     const struct openflow_packet *pkt;
-
-    printf("%s\n","funcao ofp_to_string");
 
     if (len < sizeof(struct ofp_header)) {
         ds_put_cstr(&string, "OpenFlow packet too short:\n");

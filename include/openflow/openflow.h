@@ -35,7 +35,7 @@
 
 #ifndef OPENFLOW_OPENFLOW_H
 #define OPENFLOW_OPENFLOW_H 1
-#define DN_SIZE 30
+#define DN_SIZE 32
 
 #ifdef __KERNEL__
 #include <linux/types.h>
@@ -538,7 +538,7 @@ struct ofp_match {
     uint8_t dn_src[DN_SIZE];   /*Campo adicionado para incluir o domain name*/
     uint8_t dn_dst[DN_SIZE];   /*alteracao*/
 };
-OFP_ASSERT(sizeof(struct ofp_match) == 100);
+OFP_ASSERT(sizeof(struct ofp_match) == 104);
 
 /* The match fields for ICMP type and code use the transport source and
  * destination port fields, respectively. */
@@ -779,7 +779,7 @@ struct ofp_flow_stats_request {
                                  as an output port.  A value of OFPP_NONE
                                  indicates no restriction. */
 };
-OFP_ASSERT(sizeof(struct ofp_flow_stats_request) == 104);
+OFP_ASSERT(sizeof(struct ofp_flow_stats_request) == 108);
 
 /* Body of reply to OFPST_FLOW request. */
 struct ofp_flow_stats {
@@ -812,7 +812,7 @@ struct ofp_aggregate_stats_request {
                                  as an output port.  A value of OFPP_NONE
                                  indicates no restriction. */
 };
-OFP_ASSERT(sizeof(struct ofp_aggregate_stats_request) == 104);
+OFP_ASSERT(sizeof(struct ofp_aggregate_stats_request) == 108);
 
 /* Body of reply to OFPST_AGGREGATE request. */
 struct ofp_aggregate_stats_reply {
