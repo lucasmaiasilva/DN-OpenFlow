@@ -92,13 +92,11 @@ int tabelaCmpIp(const void *v1, const void *v2){
     return -1;
 }
 
-
 uint8_t* buscaIp(struct tabela tab[],uint32_t ip){
 	struct tabela item, *resultado;
   item.ip=ip;
-	qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
+	qsort(tab,tamanho,sizeof(struct tabela),tabelaCmpIp);
   resultado = bsearch (&item, tab, tamanho, sizeof (struct tabela),tabelaCmpIp);
-
   if (resultado)
 	  return resultado->dn;
   else
@@ -108,12 +106,11 @@ uint8_t* buscaIp(struct tabela tab[],uint32_t ip){
 void busca(struct tabela tab[],uint8_t dn[32]){
 	struct tabela item, *resultado;
 	memcpy(item.dn,dn,32);
-  	resultado = bsearch (&item, tab, tab->size, sizeof (struct tabela),
-                    tabela_cmp);
+  resultado = bsearch (&item, tab, tab->size, sizeof (struct tabela),tabela_cmp);
   	if (resultado)
-    		printf("Encontrado %s %x\n",resultado->dn,resultado->ip);
+  		printf("Encontrado %s %x\n",resultado->dn,resultado->ip);
   	else
-    		printf ("Nao foi possivel encontrar %s.\n", dn);
+  		printf ("Nao foi possivel encontrar %s.\n", dn);
 }
 
 
@@ -138,7 +135,6 @@ void print_dns(struct dns_header *dns,uint8_t *name, struct dns_question *dns_q,
   fprintf(arquivo,"[dns_q->class] %x\n",ntohs(dns_q->class));
 
   fprintf(arquivo, "\n");
-
 
   fprintf(arquivo, "DNS Answer\n");
   fprintf(arquivo,"[dns_a->type]     %x\n",ntohs(dns_a->type));
@@ -236,10 +232,11 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
     if((ntohs(dns_a->type)==1)&&(ntohs(dns_a->class)==1)){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
-      fprintf(lucas,"ip - %s\n",ipv4);
-      if(buscaIp(tab,auxiliar)==NULL){
+      //fprintf(lucas,"ip - %s\n",ipv4);
+      fprintf(lucas, "%s\n",buscaIp(tab,*auxiliar));
+      if(buscaIp(tab,*auxiliar)==NULL){
         adiciona(tab,name,*auxiliar);
-        qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
+        //qsort(tab,tab->size,sizeof(struct tabela),tabelaCmpIp);
       }
     }
   }
