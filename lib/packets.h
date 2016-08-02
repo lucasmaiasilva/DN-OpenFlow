@@ -280,7 +280,6 @@ struct arp_eth_header {
 BUILD_ASSERT_DECL(ARP_ETH_HEADER_LEN == sizeof(struct arp_eth_header));
 
 //[alteracao]
-#define URL_SIZE 30
 #define DNS_HEADER_LEN 12
 struct dns_header{
    uint16_t id;
@@ -288,36 +287,23 @@ struct dns_header{
    uint16_t n_queries;//number of queries
    uint16_t n_answers;//number of answers
    uint16_t n_aut_rec;//numner of authorative records in a packet
-   uint16_t a_rec_pkt;//number of addtional records in a packet
-   //uint8_t URL[URL_SIZE];//query name
+   uint16_t n_rec_pkt;//number of addtional records in a packet
 };
 BUILD_ASSERT_DECL(DNS_HEADER_LEN == sizeof(struct dns_header));
-
-#define DNS_LEN 30
-struct dns{
-  uint8_t dns_name[URL_SIZE];
-};
-BUILD_ASSERT_DECL(DNS_LEN == sizeof(struct dns));
 
 #define DNS_QUESTION_LEN 4
 struct dns_question{
   uint16_t type;
-  uint16_t classe;
+  uint16_t class;
 };BUILD_ASSERT_DECL(DNS_QUESTION_LEN == sizeof(struct dns_question));
 
 #define DNS_ANS_HEADER_LEN 12
 struct dns_ans_header{
-  //uint16_t name;
   uint16_t type;
   uint16_t class;
   uint32_t ttl;
   uint16_t data_len;
-  uint16_t padding;
+  uint8_t pad[2];
 };BUILD_ASSERT_DECL(DNS_ANS_HEADER_LEN == sizeof(struct dns_ans_header));
-
-#define DNS_ANS_LEN 4
-struct dns_ans{
-  uint8_t ip_addr[4];
-};BUILD_ASSERT_DECL(DNS_ANS_LEN == sizeof(struct dns_ans));
 
 #endif /* packets.h */
