@@ -37,6 +37,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <signal.h>
 #include "hash.h"
 #include "ofpbuf.h"
 #include "openflow/openflow.h"
@@ -46,6 +47,7 @@
 #include "vlog.h"
 
 #include "tabela.h"
+
 #define THIS_MODULE VLM_flow
 
 //comeca a esculhambacao...
@@ -53,18 +55,26 @@
 static int tamanho = 0;
 static struct tabela tab[15000];
 
+
+void handle(int sig){
+  int i=0;
+  for(i=0;i<tamanho;i++){
+    tab[i].ttl--;
+    if(tab[i].ttl==0){
+      /*remove registro*/
+      tab[i].ip = tab[tamanho-1].ip;
+      memcpy(tab[i].dn, tab[tamanho-1].dn,32);
+      tab[i].ttl = tab[tamanho-1].ttl;
+      tamanho--;
+    }
+  }
+  alarm(1);
+}
+
 void atualizaTTL(struct tabela tab[]){
 
 }
 
-void decrementaTTL(struct tabela tab[]){
-  int i;
-  for(i=0;i<tamanho;i++){
-    if(tab[i].ttl!=0){
-      tab[i].ttl--;
-    }
-  }
-}
 
 void apaga(struct tabela tab[]){
   int i;
@@ -78,14 +88,14 @@ void apaga(struct tabela tab[]){
   }
 }
 
-void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip){
+void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip,uint32_t ttl){
   /*if (tamanho==500){
     apaga(tab);
   }*/
   //decrementaTTL(tab);
 	memcpy(tab[tamanho].dn,dn,32);
   tab[tamanho].ip=ip;
-  tab[tamanho].ttl=0xff;
+  tab[tamanho].ttl=ttl;
   tamanho++;
 }
 
@@ -244,7 +254,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
       if(buscaIp(tab,*auxiliar)==NULL){
-        adiciona(tab,name,*auxiliar);
+        adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
   }
@@ -264,7 +274,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
       if(buscaIp(tab,*auxiliar)==NULL){
-        adiciona(tab,name,*auxiliar);
+        adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
   }
@@ -285,7 +295,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
       if(buscaIp(tab,*auxiliar)==NULL){
-        adiciona(tab,name,*auxiliar);
+        adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
   }
@@ -359,6 +369,11 @@ flow_extract(struct ofpbuf *packet, uint16_t in_port, struct flow *flow)
 {
     //static struct tabela tab[15000];
     struct ofpbuf b = *packet;
+    /*trata o ttl*/
+    signal(SIGALRM,handle);
+    alarm(1);
+
+
     struct eth_header *eth;
     int retval = 0;
 

@@ -1,15 +1,16 @@
 #include <stdlib.h>
+#include <sys/time.h>
 
 
 struct tabela{
 	uint8_t dn[32];
 	uint32_t ip;
-	size_t size;
-	uint8_t ttl;
+	uint32_t ttl;
+	struct timeval ti;
 };
 
 
-void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip);
+void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip, 	uint32_t ttl);
 
 void imprimeTabela(struct tabela tab[]);
 
