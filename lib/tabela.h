@@ -6,6 +6,7 @@ struct tabela{
 	uint8_t dn[32];
 	uint32_t ip;
 	uint32_t ttl;
+	uint32_t ttl_old;
 	struct timeval ti;
 };
 
@@ -20,7 +21,7 @@ int tabelaCmpIp(const void *v1, const void *v2);
 
 uint8_t* buscaIp(struct tabela tab[],uint32_t ip);
 
-void busca(struct tabela tab[],uint8_t dn[32]);
+int busca(struct tabela tab[],uint32_t ip);
 
 /*
 int vazia(tabela *tab);

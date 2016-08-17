@@ -89,13 +89,10 @@ void apaga(struct tabela tab[]){
 }
 
 void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip,uint32_t ttl){
-  /*if (tamanho==500){
-    apaga(tab);
-  }*/
-  //decrementaTTL(tab);
 	memcpy(tab[tamanho].dn,dn,32);
   tab[tamanho].ip=ip;
   tab[tamanho].ttl=ttl;
+  tab[tamanho].ttl_old=ttl;
   tamanho++;
 }
 
@@ -114,14 +111,6 @@ void imprimeTabela(struct tabela tab[]){
 
 }
 
-/*int tabela_cmp(const void *v1, const void *v2){
-
-	const struct tabela *t1 = v1;
-	const struct tabela *t2 = v2;
-	return strcmp(t1->dn,t2->dn);
-
-}*/
-
 int tabelaCmpIp(const void *v1, const void *v2){
 	const struct tabela *t1 = v1;
 	const struct tabela *t2 = v2;
@@ -139,22 +128,27 @@ uint8_t* buscaIp(struct tabela tab[],uint32_t ip){
   item.ip=ip;
 	qsort(tab,tamanho,sizeof(struct tabela),tabelaCmpIp);
   resultado = bsearch (&item, tab, tamanho, sizeof (struct tabela),tabelaCmpIp);
-  if (resultado)
+  if (resultado){
+    resultado->ttl=resultado->ttl_old;
 	  return resultado->dn;
-  else
-  	return NULL;
+  }
+  else{
+    return NULL;
+  }
 }
 
-/*
-void busca(struct tabela tab[],uint8_t dn[32]){
+
+int busca(struct tabela tab[],uint32_t ip){
 	struct tabela item, *resultado;
-	memcpy(item.dn,dn,32);
-  resultado = bsearch (&item, tab, tab->size, sizeof (struct tabela),tabela_cmp);
-  	if (resultado)
-  		printf("Encontrado %s %x\n",resultado->dn,resultado->ip);
-  	else
-  		printf ("Nao foi possivel encontrar %s.\n", dn);
-}*/
+  item.ip=ip;
+	qsort(tab,tamanho,sizeof(struct tabela),tabelaCmpIp);
+  resultado = bsearch (&item, tab, tamanho, sizeof (struct tabela),tabelaCmpIp);
+  if (resultado)
+	  return 1;
+  else
+  	return 0;
+}
+
 
 /*
 void print_dns(struct dns_header *dns,uint8_t *name, struct dns_question *dns_q, struct dns_ans_header *dns_a){
@@ -253,7 +247,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
     if((ntohs(dns_a->type)==1)&&(ntohs(dns_a->class)==1)){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
-      if(buscaIp(tab,*auxiliar)==NULL){
+      if(busca(tab,*auxiliar)==0){
         adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
@@ -273,7 +267,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
     if((ntohs(dns_a->type)==1)&&(ntohs(dns_a->class)==1)){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
-      if(buscaIp(tab,*auxiliar)==NULL){
+      if(busca(tab,*auxiliar)==0){
         adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
@@ -294,7 +288,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
     if((ntohs(dns_a->type)==1)&&(ntohs(dns_a->class)==1)){
       ptr=auxiliar;
       ipv4 = inet_ntoa(*ptr);
-      if(buscaIp(tab,*auxiliar)==NULL){
+      if(busca(tab,*auxiliar)==0){
         adiciona(tab,name,*auxiliar,ntohl(dns_a->ttl));
       }
     }
