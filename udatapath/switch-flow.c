@@ -169,8 +169,8 @@ flow_extract_match(struct sw_flow_key* to, const struct ofp_match* from)
     memcpy(to->flow.dl_dst, from->dl_dst, ETH_ADDR_LEN);
     to->flow.dl_type = from->dl_type;
     //[alteracao]
-    memcpy(to->flow.dn_src,from->dn_src,30);
-    memcpy(to->flow.dn_dst,from->dn_dst,30);
+    memcpy(to->flow.dn_src,from->dn_src,32);
+    memcpy(to->flow.dn_dst,from->dn_dst,32);
     to->flow.nw_tos = to->flow.nw_proto = to->flow.nw_src = to->flow.nw_dst = 0;
     to->flow.tp_src = to->flow.tp_dst = 0;
     memset(to->flow.pad, 0, sizeof(to->flow.pad));

@@ -166,8 +166,8 @@ ofp_packet_in(struct ds *string, const void *oh, size_t len, int verbosity)
         match.tp_src = flow.tp_src;
         match.tp_dst = flow.tp_dst;
         //alteracao
-	      memcpy(match.dn_src, flow.dn_src, 30);
-        memcpy(match.dn_dst, flow.dn_dst, 30);
+	      memcpy(match.dn_src, flow.dn_src, 32);
+        memcpy(match.dn_dst, flow.dn_dst, 32);
 	      //FILE *lucas;
 	      //lucas = fopen("escrita.txt","w+");
 	      //fprintf(lucas,"%s",match.URL);

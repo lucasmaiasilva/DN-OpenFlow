@@ -1062,11 +1062,11 @@ str_to_flow(char *string, struct ofp_match *match, struct ofpbuf *actions,
                 *hard_timeout = atoi(value);
             } else if (cookie && !strcmp(name, "cookie")) {
                 *cookie = atoi(value);
-	          //[alteracao]
+	    //[alteracao]
             } else if (!strcmp(name,"dn_src")){
-		            memcpy(match->dn_src,value,30);
+		            memcpy(match->dn_src,value,32);
             } else if (!strcmp(name,"dn_dst")){
-		            memcpy(match->dn_dst,value,30);
+		            memcpy(match->dn_dst,value,32);
 		        }else if (parse_field(name, &f)) {
                 void *data = (char *) match + f->offset;
                 if (!strcmp(value, "*") || !strcmp(value, "ANY")) {

@@ -61,11 +61,11 @@ struct flow {
     uint8_t nw_proto;           /* IP protocol. */
     uint8_t pad[5];
     //[alteracao]
-    uint8_t dn_src[30]; 		/*domain name PACOTE DNS*/
-    uint8_t dn_dst[30]; 		/*domain name PACOTE DNS*/
+    uint8_t dn_src[32]; 		/*domain name PACOTE DNS*/
+    uint8_t dn_dst[32]; 		/*domain name PACOTE DNS*/
 
 };
-BUILD_ASSERT_DECL(sizeof(struct flow) == 100);
+BUILD_ASSERT_DECL(sizeof(struct flow) == 104);
 
 int flow_extract(struct ofpbuf *, uint16_t in_port, struct flow *);
 void flow_fill_match(struct ofp_match *, const struct flow *,

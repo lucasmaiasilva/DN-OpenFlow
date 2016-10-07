@@ -89,7 +89,7 @@ void apaga(struct tabela tab[]){
 }
 
 void adiciona(struct tabela tab[],uint8_t dn[32], uint32_t ip,uint32_t ttl){
-	memcpy(tab[tamanho].dn,dn,32);
+  memcpy(tab[tamanho].dn,dn,32);
   tab[tamanho].ip=ip;
   tab[tamanho].ttl=ttl;
   tab[tamanho].ttl_old=ttl;
@@ -100,13 +100,13 @@ void imprimeTabela(struct tabela tab[]){
   FILE *arquivo;
   char *ipv4;
   struct in_addr *ptr;
-	int i = 0;
+  int i = 0;
   arquivo=fopen("tabela","w+");
-	for(i=0;i<tamanho;i++){
+  for(i=0;i<tamanho;i++){
     ptr=&tab[i].ip;
-	  fprintf(arquivo,"dn - %s ip - %x ipv4 - %s ttl - %d\n",tab[i].dn,tab[i].ip,inet_ntoa(*ptr),tab[i].ttl);
-	}
-	fprintf(arquivo,"tamanho %d\n",tamanho);
+    fprintf(arquivo,"dn - %s ip - %x ipv4 - %s ttl - %d\n",tab[i].dn,tab[i].ip,inet_ntoa(*ptr),tab[i].ttl);
+  }
+  fprintf(arquivo,"tamanho %d\n",tamanho);
   fclose(arquivo);
 
 }
@@ -294,7 +294,7 @@ void dns_parser(struct ofpbuf b,struct tabela tab[]){
     }
   }
   //print_dns(dns,name,dns_q,dns_a1);
-  imprimeTabela(tab);
+  //imprimeTabela(tab);
 }
 
 static struct arp_header *

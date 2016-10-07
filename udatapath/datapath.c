@@ -1203,8 +1203,8 @@ fill_flow_stats(struct ofpbuf *buffer, struct sw_flow *flow,
     memcpy(ofs->match.dl_src, flow->key.flow.dl_src, ETH_ADDR_LEN);
     memcpy(ofs->match.dl_dst, flow->key.flow.dl_dst, ETH_ADDR_LEN);
     //[alteracao]
-    memcpy(ofs->match.dn_src,flow->key.flow.dn_src,30);
-    memcpy(ofs->match.dn_dst,flow->key.flow.dn_dst,30);
+    memcpy(ofs->match.dn_src,flow->key.flow.dn_src,32);
+    memcpy(ofs->match.dn_dst,flow->key.flow.dn_dst,32);
     ofs->match.dl_vlan   = flow->key.flow.dl_vlan;
     ofs->match.dl_type   = flow->key.flow.dl_type;
     ofs->match.nw_tos    = flow->key.flow.nw_tos;
